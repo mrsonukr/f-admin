@@ -1,0 +1,13 @@
+# Cloudflare Worker configuration
+name = "product-names-api"
+main = "src/worker.js"
+compatibility_date = "2024-01-01"
+
+[[r2_buckets]]
+binding = "MY_BUCKET"            # ✅ Must match code (env.MY_BUCKET)
+bucket_name = "stores"           # ✅ Your real bucket name
+preview_bucket_name = "stores"
+
+[[kv_namespaces]]
+binding = "SELECTED_KV"
+id = "c504a5764da940d4bdead12b912f0d79"

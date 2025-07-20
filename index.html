@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JSON File Uploader</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      text-align: center;
+    }
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+    input[type="file"] {
+      padding: 10px;
+    }
+    button {
+      padding: 10px 20px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    #message {
+      color: red;
+      font-weight: bold;
+    }
+    #current-file {
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Upload JSON File</h1>
+    <input type="file" id="fileInput" accept=".json">
+    <button onclick="uploadFile()">Upload</button>
+    <div id="message"></div>
+    <div id="current-file"></div>
+  </div>
+
+  <script>
+    async function fetchCurrentFile() {
+      try {
+        const response = await fetch('/products');
+        const data = await response.json();
+        const currentFileDiv = document.getElementById('current-file');
+        if (response.ok) {
+          currentFileDiv.innerHTML = `<p>Current file: ${data.fileName || 'Unknown'}</p>`;
+        } else {
+          currentFileDiv.innerHTML = `<p>Error: ${data.error}</p>`;
+        }
+      } catch (err) {
+        document.getElementById('current-file').innerHTML = `<p>Error fetching current file: ${err.message}</p>`;
+      }
+    }
+
+    async function uploadFile() {
+      const fileInput = document.getElementById('fileInput');
+      const messageDiv = document.getElementById('message');
+      const file = fileInput.files[0];
+
+      if (!file) {
+        messageDiv.textContent = 'Please select a file to upload.';
+        return;
+      }
+
+      if (file.type !== 'application/json') {
+        messageDiv.textContent = 'Please upload a valid JSON file.';
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('file', file);
+
+      try {
+        const response = await fetch('/upload', {
+          method: 'POST',
+          body: formData,
+        });
+
+        const result = await response.json();
+        messageDiv.textContent = response.ok ? result.message : `Error: ${result.error}`;
+        if (response.ok) {
+          fileInput.value = '';
+          fetchCurrentFile();
+        }
+      } catch (err) {
+        messageDiv.textContent = `Error: ${err.message}`;
+      }
+    }
+
+    // Fetch the current file on page load
+    fetchCurrentFile();
+  </script>
+</body>
+</html>
